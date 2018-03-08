@@ -21,10 +21,11 @@ You also need ASTRAL in the same folder as SVDquest. So if you are in the folder
 
 To run SVDquest*, run 
 
-   SVDquest -i <input gene trees> -a <input alignment> -o <output file> --greedy --majority --strict --single
+    SVDquest -i <input gene trees> -a <input alignment> -o <output file> --greedy --majority --strict --single
    
    
 SVDquest* uses [SIESTA](https://link.springer.com/chapter/10.1007/978-3-319-67979-2_13) to generate strict, greedy, and majority consensus trees of all optimal trees, as well as a single arbitrarily chosen optimal tree.
 
 You can also use the `--score` option to score a tree like this: 
-   SVDquest --score -a <input alignment> -o <output file>
+
+     SVDquest --score -a <input alignment> -o <output file>
