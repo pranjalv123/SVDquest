@@ -18,10 +18,10 @@
 void write_nex(string infile, string outfile, TaxonSet& ts) {
   ifstream inf(infile);
 
-  
+
   int ntaxa, nchars;
   inf >> ntaxa >> nchars;
-  
+
   ofstream of(outfile);
 
   INFO << ts.size() << endl;
@@ -45,7 +45,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
   string str;
   vector<string> sequences(ts.size());
 
-  
+
   while (getline(inf, str)) {
     if (!str.size()) {
       continue;
@@ -63,7 +63,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
     of << i << "    " << sequences[i] << endl;
   }
 
-  
+
   of << endl << ";" << endl << "END;";
   of.close();
   inf.close();
@@ -84,22 +84,22 @@ void parse_quartet(QuartetDict& qd, char* c) {
 }
 
 void SVDQuestTripartitionScorer::runPaup(Config& conf) {
-  
+
   Timer::start("GetQuartetWeights");
   string nexfile = outname + ".svdquest.nex";
   string quartetfile = outname + ".svdquest.quartets";
-  string paupfile = outname + ".pauptree";  
+  string paupfile = outname + ".pauptree";
   INFO << "Writing nexus file " << nexfile << endl;
   write_nex(alignmentfile, nexfile, ts);
   INFO << "Done" << endl;
-  
+
   string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick ;\n";
 
-  
-  
+
+
   INFO << "Running PAUP* " << command << endl;
   FILE* paupstream;
-  if (wine) 
+  if (wine)
     paupstream = popen("wine paup4c -n", "w");
   else
     paupstream = popen("paup -n", "w");
@@ -113,7 +113,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
   ifstream infile(quartetfile);
 
   qd = new QuartetDict(ts, "");
-  
+
   Quartet q(ts);
   string s;
   double w;
@@ -123,14 +123,14 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
       continue;
     parse_quartet(*qd, &(s[0]));
 
-  }  
+  }
 
   Timer::stop("GetQuartetWeights");
 
 
 
     Timer::start("GetAdditionalClades");
-    
+
     ifstream pauptree_stream(paupfile);
     string pauptree;
     pauptree_stream >> pauptree;
@@ -140,22 +140,22 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
     paupstream_o << pauptree << endl;
     paupstream_o.close();
 
-    
+
   if (!nostar) {
 
-    ASTRALCladeExtractor ce(astralpath, gtreefile, paupfile);
+    ASTRALCladeExtractor ce(gtreefile, paupfile);
 
-  
+
     unordered_set<Clade> newclades = ce.extract(ts);
-  
+
     conf.add_clades(newclades.begin(), newclades.end());
 
     INFO << "Added " << newclades.size() << " clades" << endl;
-  
+
     DEBUG << conf.get_clades().size() << endl;
   }
     Timer::stop("GetAdditionalClades");
-  
+
 
 }
 
@@ -165,9 +165,9 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
   if (doRunPaup) {
     runPaup(conf);
   }
-  
+
   Timer::start("MakeBSDict");
-  
+
   for (const Clade& clade : conf.get_clades()) {
     vector<Taxon> nonmembers;
     for(size_t i = 0; i < ts.size(); i++) {
@@ -180,7 +180,7 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
     if (clade.size() < 2) {
       continue;
     }
-    
+
     for (size_t i = 0; i < nonmembers.size(); i++) {
       for (size_t j = i+1; j < nonmembers.size(); j++) {
 
@@ -191,7 +191,7 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
   	      d += (*qd)(nonmembers[i],nonmembers[j],k,l);
   	  }
   	}
-	
+
   	mp[make_pair(nonmembers[i], nonmembers[j])] = d;
   	mp[make_pair(nonmembers[j], nonmembers[i])] = d;
       }
@@ -199,7 +199,7 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
   }
   Timer::stop("MakeBSDict");
 
-  
+
 
 
 
@@ -210,18 +210,18 @@ double SVDQuestTripartitionScorer::score(const Tripartition& t) {
   double val = 0;
 
 
-  for (Taxon c : t.a2) 
-    for (Taxon d : t.rest) 
+  for (Taxon c : t.a2)
+    for (Taxon d : t.rest)
       val +=  W[t.a1.get_taxa()][make_pair(c,d)];
-    
 
 
-  for (Taxon c : t.a1) 
-    for (Taxon d : t.rest) 
+
+  for (Taxon c : t.a1)
+    for (Taxon d : t.rest)
       val +=  W[t.a2.get_taxa()][make_pair(c,d)];
-  
 
-  for (Taxon c : t.a2) 
+
+  for (Taxon c : t.a2)
     for (Taxon d : t.a2)
       if (c > d)
 	val += W[t.a1.get_taxa()][make_pair(c, d)];

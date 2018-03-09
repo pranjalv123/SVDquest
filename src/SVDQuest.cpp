@@ -30,19 +30,29 @@ int main(int argc, char** argv) {
   bool useDP = 0;
   bool wine=true;
   vector<string> output_labels;
-  bool getScore = false;
+
   bool nostar = false;
   string scoreTree = "";
-  string astralpath = string(dirname(argv[0])) + "/astral.4.7.8.jar";
+
+
+  bool getScore=false;
+  bool getSingle=true;
+  bool getGreedy=true;
+  bool getMajority=true;
+  bool getStrict=true;
+  bool getAll=false;
+  bool getCount=false;
+
 
   Logger::disable("DEBUG");
   Logger::enable("INFO");
   Logger::enable("PROGRESS");
 
-  Config conf;  
+  Config conf;
   conf.matrix=0;
   conf.analyses.push_back(new ScoreAnalysis());
-  output_labels.push_back("score");	  
+  output_labels.push_back("score");
+  string astralpath;
   for(int i = 1; i < argc; i++) {
     if (string(argv[i]) == "-i" || string(argv[i]) == "--input") {
       assert(argc > i+1);
@@ -86,31 +96,45 @@ int main(int argc, char** argv) {
       scoreTree = string(argv[i]);
 
     }
+    if (string(argv[i]) == "--noscore") {
+      getScore=false;
+    }
 
+    if (string(argv[i]) == "--nosingle") {
+      getSingle=false;
+    }
+    if (string(argv[i]) == "--nogreedy") {
+      getSingle=false;
+    }
+    if (string(argv[i]) == "--nomajority") {
+      getMajority=false;
+    }
+    if (string(argv[i]) == "--nostrict") {
+      getStrict=false;
+    }
+    if (string(argv[i]) == "--nocount") {
+      getCount=false;
+    }
+
+    if (string(argv[i]) == "--score") {
+      getScore=true;
+    }
     if (string(argv[i]) == "--single") {
-      conf.analyses.push_back(new SingleTreeAnalysis());
-      output_labels.push_back("single");	
+      getSingle=true;
     }
     if (string(argv[i]) == "--greedy") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(0.0));
-      output_labels.push_back("greedy");	
+      getSingle=true;
     }
     if (string(argv[i]) == "--majority") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(0.5));
-      output_labels.push_back("majority");	
+      getMajority=true;
     }
     if (string(argv[i]) == "--strict") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(1.0));
-      output_labels.push_back("strict");	
-    }
-    if (string(argv[i]) == "--all") {
-      // conf.analyses.push_back();
-      // output_labels.push_back("all");	
+      getStrict=true;
     }
     if (string(argv[i]) == "--count") {
-      conf.analyses.push_back(new CountTreesAnalysis());
-      output_labels.push_back("count");	
+      getCount=true;
     }
+
     if (string(argv[i]) == "--profile") {
       conf.profile="profile";
     }
@@ -120,20 +144,47 @@ int main(int argc, char** argv) {
     if (string(argv[i]) == "--no-star") {
       nostar=1;
     }
-    
+
+
+
+
+    if (string(argv[i]) == "--single") {
+      conf.analyses.push_back(new SingleTreeAnalysis());
+      output_labels.push_back("single");
+    }
+    if (string(argv[i]) == "--greedy") {
+      conf.analyses.push_back(new ConsensusTreeAnalysis(0.0));
+      output_labels.push_back("greedy");
+    }
+    if (string(argv[i]) == "--majority") {
+      conf.analyses.push_back(new ConsensusTreeAnalysis(0.5));
+      output_labels.push_back("majority");
+    }
+    if (string(argv[i]) == "--strict") {
+      conf.analyses.push_back(new ConsensusTreeAnalysis(1.0));
+      output_labels.push_back("strict");
+    }
+    if (string(argv[i]) == "--all") {
+      // conf.analyses.push_back();
+      // output_labels.push_back("all");
+    }
+    if (string(argv[i]) == "--count") {
+      conf.analyses.push_back(new CountTreesAnalysis());
+      output_labels.push_back("count");
+    }
   }
 
   if (input.size() == 0 || output.size() == 0) {
     cerr << "SVDQuest -i <source tree file> -o <output file> [-e <extra trees>]" << endl;
     exit(-1);
   }
-  
+
   string quartetFile = output + ".svdQuartets";
 
   ifstream infile(input);
   int nlines = 0;
   string buffer;
-  
+
   while(getline(infile, buffer)) {
     if (buffer.size() > 3) {
       nlines += 1;
@@ -144,25 +195,25 @@ int main(int argc, char** argv) {
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->nostar = nostar;
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->wine = wine;
   DEBUG << conf.scorer->clades_size() << endl;
-  
+
   conf.taxon_extractor = new DefaultTaxonSetExtractor(input);
 
 
-  
+
   if (getScore) {
     INFO << "Only one tree provided\nScoring tree instead of finding optimal tree" << endl;
-    conf.extractors.push_back(new ASTRALCladeExtractor(astralpath, scoreTree, "", false, true));
+    conf.extractors.push_back(new ASTRALCladeExtractor(scoreTree, "", false, true));
   } else {
-    
+
     if (extra != "")
-      conf.extractors.push_back(new ASTRALCladeExtractor(astralpath, input, extra));
+      conf.extractors.push_back(new ASTRALCladeExtractor(input, extra));
     else
-      conf.extractors.push_back(new ASTRALCladeExtractor(astralpath, input));
+      conf.extractors.push_back(new ASTRALCladeExtractor(input));
   }
   vector<string> trees = wASTRAL(conf);
 
   for (int i = 0; i < trees.size(); i++) {
-    cout << output_labels.at(i) << endl;    
+    cout << output_labels.at(i) << endl;
     cout << trees.at(i) << endl;
     if (output.size() ) {
       ofstream outfile(output + "." + output_labels.at(i));
@@ -182,14 +233,14 @@ int main(int argc, char** argv) {
 
     conf_score.analyses.push_back(new ScoreAnalysis());
     conf_score.matrix = 0;
-      
+
     string pauptreefile = output + ".pauptree";
     conf_score.taxon_extractor = conf.taxon_extractor;
-    conf_score.extractors.push_back(new ASTRALCladeExtractor(astralpath, pauptreefile, "", false, true));
+    conf_score.extractors.push_back(new ASTRALCladeExtractor(pauptreefile, "", false, true));
     conf_score.scorer = new SVDQuestTripartitionScorer(*dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer), pauptreefile);
 
     trees = wASTRAL(conf_score);
-  
+
     ofstream outfile2(output + ".pauptree_score");
     outfile2 << trees.at(0) << endl;
     outfile2.close();
