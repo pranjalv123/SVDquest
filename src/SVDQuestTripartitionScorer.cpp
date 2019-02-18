@@ -12,7 +12,10 @@
 #include <limits>
 #include <fstream>
 #include <cmath>
-
+#if defined(_WIN32) || defined(_WIN64)
+/* We are on Windows */
+# define strtok_r strtok_s
+#endif
 
 
 void write_nex(string infile, string outfile, TaxonSet& ts) {
@@ -99,10 +102,15 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   INFO << "Running PAUP* " << command << endl;
   FILE* paupstream;
+#if defined(_WIN32) || defined(_WIN64)
+  paupstream = _popen("paup -n", "w");
+#else
   if (wine)
-    paupstream = popen("wine paup4c -n", "w");
+	  paupstream = popen("wine paup4c -n", "w");
   else
-    paupstream = popen("paup -n", "w");
+	  paupstream = popen("paup -n", "w");
+#endif
+  
   fputs(command.c_str(), paupstream);
 
   fclose(paupstream);

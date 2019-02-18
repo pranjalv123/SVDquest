@@ -14,7 +14,9 @@
 #include <cassert>
 #include <iostream>
 #include <cstdlib>
-#include <libgen.h>
+#if !(defined(_WIN32) || defined(_WIN64))
+	#include <libgen.h>
+#endif
 
 using namespace std;
 
@@ -76,12 +78,26 @@ int main(int argc, char** argv) {
       assert(argc > i+1);
       i++;
       fclose(fopen(argv[i], "a"));
+#if (defined(_WIN32) || defined(_WIN64))
+	  char buf[1000];
+	  _fullpath(buf, argv[i], 1000);
+	  output = buf;
+
+#else
       output = string(realpath(argv[i], NULL));
+#endif
     }
     if (string(argv[i]) == "-e" || string(argv[i]) == "--extra") {
       assert(argc > i+1);
       i++;
-      extra = string(realpath(argv[i], NULL));
+#if (defined(_WIN32) || defined(_WIN64))
+	  char buf[1000];
+	  _fullpath(buf, argv[i], 1000);
+	  extra = buf;
+
+#else
+	  extra = string(realpath(argv[i], NULL));
+#endif
     }
     if (string(argv[i]) == "--debug") {
       Logger::enable("DEBUG");
