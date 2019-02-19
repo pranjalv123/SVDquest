@@ -45,6 +45,9 @@ int main(int argc, char** argv) {
   bool getAll=false;
   bool getCount=true;
 
+  bool unconstrained=false;
+  bool constrained_basic=false;
+
 
   Logger::disable("DEBUG");
   Logger::enable("INFO");
@@ -162,6 +165,15 @@ int main(int argc, char** argv) {
     }
 
 
+    if (string(argv[i]) == "--unconstrained") {
+      unconstrained=1;
+    }
+
+    if (string(argv[i]) == "--constrained-basic") {
+      constrained_basic=1;
+      nostar = 1;
+    }
+
 
 
   }
@@ -225,9 +237,9 @@ int main(int argc, char** argv) {
   } else {
 
     if (extra != "")
-      conf.extractors.push_back(new ASTRALCladeExtractor(input, extra));
+      conf.extractors.push_back(new ASTRALCladeExtractor(input, extra, unconstrained));
     else
-      conf.extractors.push_back(new ASTRALCladeExtractor(input));
+      conf.extractors.push_back(new ASTRALCladeExtractor(input, "", unconstrained));
   }
   vector<string> trees = wASTRAL(conf);
 
@@ -255,7 +267,9 @@ int main(int argc, char** argv) {
 
     string pauptreefile = output + ".pauptree";
     conf_score.taxon_extractor = conf.taxon_extractor;
+
     conf_score.extractors.push_back(new ASTRALCladeExtractor(pauptreefile, "", false, true));
+
     conf_score.scorer = new SVDQuestTripartitionScorer(*dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer), pauptreefile);
 
     trees = wASTRAL(conf_score);

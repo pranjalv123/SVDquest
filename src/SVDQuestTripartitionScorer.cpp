@@ -96,7 +96,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
   write_nex(alignmentfile, nexfile, ts);
   INFO << "Done" << endl;
 
-  string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick ;\n";
+  string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick root=yes;\n";
 
 
 
