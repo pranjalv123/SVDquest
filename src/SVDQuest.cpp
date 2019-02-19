@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   bool getMajority=true;
   bool getStrict=true;
   bool getAll=false;
-  bool getCount=false;
+  bool getCount=true;
 
 
   Logger::disable("DEBUG");
@@ -164,36 +164,39 @@ int main(int argc, char** argv) {
 
 
 
-    if (string(argv[i]) == "--single") {
-      conf.analyses.push_back(new SingleTreeAnalysis());
-      output_labels.push_back("single");
-    }
-    if (string(argv[i]) == "--greedy") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(0.0));
-      output_labels.push_back("greedy");
-    }
-    if (string(argv[i]) == "--majority") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(0.5));
-      output_labels.push_back("majority");
-    }
-    if (string(argv[i]) == "--strict") {
-      conf.analyses.push_back(new ConsensusTreeAnalysis(1.0));
-      output_labels.push_back("strict");
-    }
-    if (string(argv[i]) == "--all") {
-      // conf.analyses.push_back();
-      // output_labels.push_back("all");
-    }
-    if (string(argv[i]) == "--count") {
-      conf.analyses.push_back(new CountTreesAnalysis());
-      output_labels.push_back("count");
-    }
   }
-
+  
   if (input.size() == 0 || output.size() == 0) {
     cerr << "SVDQuest -i <source tree file> -o <output file> [-e <extra trees>]" << endl;
     exit(-1);
   }
+
+
+  if (getSingle) {
+    conf.analyses.push_back(new SingleTreeAnalysis());
+    output_labels.push_back("single");
+  }
+  if (getGreedy) {
+    conf.analyses.push_back(new ConsensusTreeAnalysis(0.0));
+    output_labels.push_back("greedy");
+  }
+  if (getMajority) {
+    conf.analyses.push_back(new ConsensusTreeAnalysis(0.5));
+    output_labels.push_back("majority");
+  }
+  if (getStrict) {
+    conf.analyses.push_back(new ConsensusTreeAnalysis(1.0));
+    output_labels.push_back("strict");
+  }
+  if (getAll) {
+    // conf.analyses.push_back();
+    // output_labels.push_back("all");
+  }
+  if (getCount) {
+    conf.analyses.push_back(new CountTreesAnalysis());
+    output_labels.push_back("count");
+  }
+  
 
   string quartetFile = output + ".svdQuartets";
 
