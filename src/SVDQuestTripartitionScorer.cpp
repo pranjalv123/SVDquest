@@ -93,7 +93,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
   string quartetfile = outname + ".svdquest.quartets";
   string paupfile = outname + ".pauptree";
   INFO << "Writing nexus file " << nexfile << endl;
-  write_nex(alignmentfile, nexfile, ts);
+  write_nex(alignmentfile, nexfile, ts());
   INFO << "Done" << endl;
 
   string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick root=yes;\n";
@@ -120,9 +120,9 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   ifstream infile(quartetfile);
 
-  qd = new QuartetDict(ts, "");
+  qd = new QuartetDict(ts(), "");
 
-  Quartet q(ts);
+  Quartet q(ts());
   string s;
   double w;
   while(!infile.eof()) {
@@ -143,7 +143,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
     string pauptree;
     pauptree_stream >> pauptree;
     pauptree_stream.close();
-    pauptree = unmap_newick_names(pauptree, ts);
+    pauptree = unmap_newick_names(pauptree, ts());
     ofstream paupstream_o(paupfile);
     paupstream_o << pauptree << endl;
     paupstream_o.close();
@@ -154,7 +154,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
     ASTRALCladeExtractor ce(gtreefile, paupfile);
 
 
-    unordered_set<Clade> newclades = ce.extract(ts);
+    unordered_set<Clade> newclades = ce.extract(ts());
 
     conf.add_clades(newclades.begin(), newclades.end());
 
@@ -178,7 +178,7 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
 
   for (const Clade& clade : conf.get_clades()) {
     vector<Taxon> nonmembers;
-    for(size_t i = 0; i < ts.size(); i++) {
+    for(size_t i = 0; i < ts().size(); i++) {
       if (!clade.contains(i))
   	nonmembers.push_back(i);
     }
