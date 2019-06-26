@@ -100,15 +100,19 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
 
 
-  INFO << "Running PAUP* " << command << endl;
+  INFO << "Running PAUP*:\n" << command << endl;
   FILE* paupstream;
 #if defined(_WIN32) || defined(_WIN64)
-  paupstream = _popen("paup -n", "w");
+  string exec_command = paup_executable + " -n";
+  paupstream = _popen(exec_command.c_str(), "w");
 #else
   if (wine)
 	  paupstream = popen("wine paup4c -n", "w");
-  else
-	  paupstream = popen("paup -n", "w");
+  else {
+    string exec_command = paup_executable + " -n";
+    INFO << "PAUP command: " << exec_command << endl;
+    paupstream = popen(exec_command.c_str(), "w");
+  }
 #endif
   
   fputs(command.c_str(), paupstream);
@@ -151,7 +155,8 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   if (!nostar) {
 
-    ASTRALCladeExtractor ce(gtreefile, paupfile);
+    INFO << findAstralJar() << endl;
+    ASTRALCladeExtractor ce(findAstralJar(), gtreefile, paupfile);
 
 
     unordered_set<Clade> newclades = ce.extract(ts());

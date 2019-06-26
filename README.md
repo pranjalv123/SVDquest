@@ -16,6 +16,8 @@ To check if this is installed correctly, if you run `wine paup4c` from your comm
 
 Alternatively, you can use the Linux version of PAUP*. In this case you should run SVDquest with the `--nowine` option.
 
+If you are running on Windows or using the Linux version of PAUP* on Linux, you can specify a custom PAUP* executable using the --paup-exe option followed by the path to the executable.
+
 You also need ASTRAL in the same folder as SVDquest. So if you are in the folder with the SVDquest executable, Astral/astral.4.7.8.jar (or any other version of ASTRAL) should exist. 
 
 

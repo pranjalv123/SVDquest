@@ -49,6 +49,8 @@ int main(int argc, char** argv) {
   bool constrained_basic=false;
 
 
+  string paup_executable = "";
+
   Logger::disable("DEBUG");
   Logger::enable("INFO");
   Logger::enable("PROGRESS");
@@ -174,6 +176,13 @@ int main(int argc, char** argv) {
       nostar = 1;
     }
 
+    if (string(argv[i]) == "--paup-exe") {
+      assert(argc > i+1);
+      i++;
+      paup_executable = string(argv[i]);
+    }
+
+    
 
 
   }
@@ -223,6 +232,9 @@ int main(int argc, char** argv) {
   }
 
   conf.scorer = new SVDQuestTripartitionScorer(alignment, output, astralpath, input);
+  if (paup_executable.length()) {
+    dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->set_paup_exe(paup_executable);
+  }
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->nostar = nostar;
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->wine = wine;
   DEBUG << conf.scorer->clades_size() << endl;
