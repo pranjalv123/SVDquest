@@ -32,3 +32,5 @@ If for some reason this is a problem, you can disable these with --nogreedy, --n
 You can also use the `--score` option to score a tree like this:
 
      SVDquest --score -a <input alignment> -o <output file>
+     
+If your analysis has a small number of taxa (perhaps less than 15), you can pass the --unconstrained option to SVDquest to do a global exact search. This will be (substantially) slower than the standard analysis, but it will likely provide a better result.
