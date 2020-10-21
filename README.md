@@ -2,13 +2,11 @@
 
 Building accurate SVDquartets-based species trees
 
-To build SVDquest you will first need [phylokit](https://github.com/pranjalv123/phylokit) and [phylonaut](https://github.com/pranjalv123/phylonaut),
+To build SVDquest you can run
 
-    mkdir build
-    cd build
-    cmake ../src
-    make
+    bazel build //src:SVDQuest -c opt
 
+You can install the bazel build system [here](http://bazel.build). Once the build is complete, your executable will be located at bazel-bin/src/SVDQuest.
 
 Ideally, you will have wine installed, and the Windows version of PAUP*. The Windows version has better numerical routines and returns substantially more accurate trees than the Linux version.
 
