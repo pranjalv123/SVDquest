@@ -1,14 +1,22 @@
 #ifndef SVDQUEST_TRIPARTITION_SCORER_HPP__
 #define SVDQUEST_TRIPARTITION_SCORER_HPP__
 
-#include <phylonaut/TripartitionScorer.hpp>
-#include <util/Logger.hpp>
+#include "phylonaut/TripartitionScorer/TripartitionScorer.hpp"
 
 
 class SVDQuestTripartitionScorer : public TripartitionScorer{
 public:
-  SVDQuestTripartitionScorer(string& alignment, string& outname, string& astralpath, string& gtreefile) : alignmentfile(alignment), outname(outname), astralpath(astralpath), gtreefile(gtreefile), doRunPaup(true) {};
-  SVDQuestTripartitionScorer(SVDQuestTripartitionScorer& other, string& gtreefile) : qd(other.qd), gtreefile(gtreefile), doRunPaup(false) {};
+  SVDQuestTripartitionScorer(string& alignment, string& outname, string& astralpath, string& gtreefile) : 
+    alignmentfile(alignment), 
+    outname(outname), 
+    astralpath(astralpath), 
+    gtreefile(gtreefile), 
+    doRunPaup(true) {};
+  
+  SVDQuestTripartitionScorer(SVDQuestTripartitionScorer& other, string& gtreefile) : 
+    gtreefile(gtreefile), 
+    qd(other.qd), 
+    doRunPaup(false) {};
 
   void runPaup(Config& conf);
   

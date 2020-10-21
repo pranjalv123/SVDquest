@@ -1,14 +1,15 @@
-#include <phylonaut/wASTRAL.hpp>
-#include <phylonaut/DefaultTaxonSetExtractor.hpp>
-#include <phylonaut/ASTRALCladeExtractor.hpp>
+#include "phylonaut/wASTRAL.hpp"
+#include "phylonaut/Config.hpp"
+#include "phylonaut/CladeExtractor/DefaultTaxonSetExtractor.hpp"
+#include "phylonaut/CladeExtractor/ASTRALCladeExtractor.hpp"
 #include "SVDQuestTripartitionScorer.hpp"
 
-#include <util/Logger.hpp>
-#include <util/Timer.hpp>
-#include <phylonaut/SingleTreeAnalysis.hpp>
-#include <phylonaut/ConsensusTreeAnalysis.hpp>
-#include <phylonaut/CountTreesAnalysis.hpp>
-#include <phylonaut/ScoreAnalysis.hpp>
+#include <glog/logging.h>
+#include "phylokit/util/Timer.hpp"
+#include "phylonaut/Analysis/SingleTreeAnalysis.hpp"
+#include "phylonaut/Analysis/ConsensusTreeAnalysis.hpp"
+#include "phylonaut/Analysis/CountTreesAnalysis.hpp"
+#include "phylonaut/Analysis/ScoreAnalysis.hpp"
 #include <vector>
 #include <string>
 #include <cassert>
@@ -28,7 +29,6 @@ int main(int argc, char** argv) {
   string output = "";
   string extra = "";
   string alignment;
-  int debug = 0;
   bool useDP = 0;
   bool wine=true;
   vector<string> output_labels;
@@ -45,16 +45,13 @@ int main(int argc, char** argv) {
   bool getAll=false;
   bool getCount=false;
 
-
-  Logger::disable("DEBUG");
-  Logger::enable("INFO");
-  Logger::enable("PROGRESS");
-
   Config conf;
   conf.matrix=0;
   conf.analyses.push_back(new ScoreAnalysis());
   output_labels.push_back("score");
   string astralpath;
+  google::InitGoogleLogging(argv[0]);
+
   for(int i = 1; i < argc; i++) {
     if (string(argv[i]) == "-i" || string(argv[i]) == "--input") {
       assert(argc > i+1);
@@ -98,13 +95,7 @@ int main(int argc, char** argv) {
 #else
 	  extra = string(realpath(argv[i], NULL));
 #endif
-    }
-    if (string(argv[i]) == "--debug") {
-      Logger::enable("DEBUG");
-      Logger::enable("INFO");
-      Logger::enable("PROGRESS");
-      DEBUG << "Debug enabled\n";
-    }
+    }    
     if (string(argv[i]) == "--score") {
       getScore = true;
       assert(argc > i+1);
@@ -120,7 +111,7 @@ int main(int argc, char** argv) {
       getSingle=false;
     }
     if (string(argv[i]) == "--nogreedy") {
-      getSingle=false;
+      getGreedy=false;
     }
     if (string(argv[i]) == "--nomajority") {
       getMajority=false;
@@ -139,10 +130,7 @@ int main(int argc, char** argv) {
       getSingle=true;
     }
     if (string(argv[i]) == "--greedy") {
-      getSingle=true;
-    }
-    if (string(argv[i]) == "--majority") {
-      getMajority=true;
+      getGreedy=true;
     }
     if (string(argv[i]) == "--strict") {
       getStrict=true;
@@ -181,6 +169,7 @@ int main(int argc, char** argv) {
       output_labels.push_back("strict");
     }
     if (string(argv[i]) == "--all") {
+      getAll = true;
       // conf.analyses.push_back();
       // output_labels.push_back("all");
     }
@@ -210,14 +199,13 @@ int main(int argc, char** argv) {
   conf.scorer = new SVDQuestTripartitionScorer(alignment, output, astralpath, input);
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->nostar = nostar;
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->wine = wine;
-  DEBUG << conf.scorer->clades_size() << endl;
 
   conf.taxon_extractor = new DefaultTaxonSetExtractor(input);
 
 
 
   if (getScore) {
-    INFO << "Only one tree provided\nScoring tree instead of finding optimal tree" << endl;
+    LOG(INFO) << "Only one tree provided\nScoring tree instead of finding optimal tree" << endl;
     conf.extractors.push_back(new ASTRALCladeExtractor(scoreTree, "", false, true));
   } else {
 
@@ -228,7 +216,7 @@ int main(int argc, char** argv) {
   }
   vector<string> trees = wASTRAL(conf);
 
-  for (int i = 0; i < trees.size(); i++) {
+  for (size_t i = 0; i < trees.size(); i++) {
     cout << output_labels.at(i) << endl;
     cout << trees.at(i) << endl;
     if (output.size() ) {
@@ -260,6 +248,6 @@ int main(int argc, char** argv) {
     ofstream outfile2(output + ".pauptree_score");
     outfile2 << trees.at(0) << endl;
     outfile2.close();
-    INFO << "PAUP score: " << trees.at(0) << endl;
+    LOG(INFO) << "PAUP score: " << trees.at(0) << endl;
   }
 }
