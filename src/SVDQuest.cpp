@@ -4,11 +4,12 @@
 #include "phylonaut/CladeExtractor/ASTRALCladeExtractor.hpp"
 #include "SVDQuestTripartitionScorer.hpp"
 
-#include <util/Timer.hpp>
-#include <phylonaut/SingleTreeAnalysis.hpp>
-#include <phylonaut/ConsensusTreeAnalysis.hpp>
-#include <phylonaut/CountTreesAnalysis.hpp>
-#include <phylonaut/ScoreAnalysis.hpp>
+#include "phylokit/util/Timer.hpp"
+#include "phylonaut/Analysis/SingleTreeAnalysis.hpp"
+#include "phylonaut/Analysis/ConsensusTreeAnalysis.hpp"
+#include "phylonaut/Analysis/CountTreesAnalysis.hpp"
+#include "phylonaut/Analysis/ScoreAnalysis.hpp"
+#include <glog/logging.h>
 #include <vector>
 #include <string>
 #include <cassert>

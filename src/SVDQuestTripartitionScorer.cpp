@@ -1,12 +1,12 @@
 #include "SVDQuestTripartitionScorer.hpp"
 
-#include <phylonaut/CladeExtractor.hpp>
-#include <phylonaut/ASTRALCladeExtractor.hpp>
+#include "phylonaut/CladeExtractor/CladeExtractor.hpp"
+#include "phylonaut/CladeExtractor/ASTRALCladeExtractor.hpp"
 
-#include <newick.hpp>
-#include <phylonaut/wASTRAL.hpp>
-#include <util/Logger.hpp>
-#include <util/Timer.hpp>
+#include "phylokit/newick.hpp"
+#include "phylonaut/wASTRAL.hpp"
+#include <glog/logging.h>
+#include "phylokit/util/Timer.hpp"
 
 #include <limits>
 #include <fstream>
@@ -26,7 +26,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
 
   ofstream of(outfile);
 
-  INFO << ts.size() << endl;
+  LOG(INFO) << ts.size() << endl;
   of << "#nexus\n";
   of << "Set AllowPunct=yes;" << endl;
   of << "BEGIN TAXA;"<< endl;
@@ -91,15 +91,15 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
   string nexfile = outname + ".svdquest.nex";
   string quartetfile = outname + ".svdquest.quartets";
   string paupfile = outname + ".pauptree";
-  INFO << "Writing nexus file " << nexfile << endl;
+  LOG(INFO) << "Writing nexus file " << nexfile << endl;
   write_nex(alignmentfile, nexfile, ts());
-  INFO << "Done" << endl;
+  LOG(INFO) << "Done" << endl;
 
   string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick root=yes;\n";
 
 
 
-  INFO << "Running PAUP*:\n" << command << endl;
+  LOG(INFO) << "Running PAUP*:\n" << command << endl;
   FILE* paupstream;
 #if defined(_WIN32) || defined(_WIN64)
   string exec_command = paup_executable + " -n";
@@ -109,7 +109,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 	  paupstream = popen("wine paup4c -n", "w");
   else {
     string exec_command = paup_executable + " -n";
-    INFO << "PAUP command: " << exec_command << endl;
+    LOG(INFO) << "PAUP command: " << exec_command << endl;
     paupstream = popen(exec_command.c_str(), "w");
   }
 #endif
@@ -118,7 +118,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   fclose(paupstream);
 
-  INFO << "DONE" << endl;
+  LOG(INFO) << "DONE" << endl;
 
 
   ifstream infile(quartetfile);
@@ -154,7 +154,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   if (!nostar) {
 
-    INFO << findAstralJar() << endl;
+    LOG(INFO) << findAstralJar() << endl;
     ASTRALCladeExtractor ce(findAstralJar(), gtreefile, paupfile);
 
 
@@ -162,9 +162,8 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
     conf.add_clades(newclades.begin(), newclades.end());
 
-    INFO << "Added " << newclades.size() << " clades" << endl;
+    LOG(INFO) << "Added " << newclades.size() << " clades" << endl;
 
-    DEBUG << conf.get_clades().size() << endl;
   }
     Timer::stop("GetAdditionalClades");
 
