@@ -2,7 +2,7 @@
 #ifndef SVDQUEST_TRIPARTITION_SCORER_HPP__
 #define SVDQUEST_TRIPARTITION_SCORER_HPP__
 
-#include "phylonaut/TripartitionScorerTripartitionScorer.hpp"
+#include "phylonaut/TripartitionScorer/TripartitionScorer.hpp"
 
 
 class SVDQuestTripartitionScorer : public TripartitionScorer{
