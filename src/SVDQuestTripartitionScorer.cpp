@@ -1,14 +1,13 @@
-
 #include "SVDQuestTripartitionScorer.hpp"
 
-#include "phylonaut/CladeExtractor/CladeExtractor.hpp"
-#include "phylonaut/CladeExtractor/ASTRALCladeExtractor.hpp"
+#include <phylonaut/CladeExtractor.hpp>
+#include <phylonaut/ASTRALCladeExtractor.hpp>
 
-#include "phylokit/newick.hpp"
-#include "phylonaut/wASTRAL.hpp"
-#include "phylokit/util/Timer.hpp"
+#include <newick.hpp>
+#include <phylonaut/wASTRAL.hpp>
+#include <util/Logger.hpp>
+#include <util/Timer.hpp>
 
-#include <glog/logging.h>
 #include <limits>
 #include <fstream>
 #include <cmath>
@@ -27,7 +26,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
 
   ofstream of(outfile);
 
-  LOG(INFO) << ts.size() << endl;
+  INFO << ts.size() << endl;
   of << "#nexus\n";
   of << "Set AllowPunct=yes;" << endl;
   of << "BEGIN TAXA;"<< endl;
@@ -35,7 +34,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
 
   of << "    TAXLABELS" << endl;
 
-  for (size_t i = 0; i < ts.size(); i++) {
+  for (int i = 0; i < ts.size(); i++) {
     of <<"    " << i << endl;
   }
   of << "    ;" << endl << "END;" << endl << endl;
@@ -62,7 +61,7 @@ void write_nex(string infile, string outfile, TaxonSet& ts) {
     sequences[ts[taxname]] += s;
   }
 
-  for (size_t i = 0; i < ts.size(); i++) {
+  for (int i = 0; i < ts.size(); i++) {
     of << i << "    " << sequences[i] << endl;
   }
 
@@ -92,30 +91,34 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
   string nexfile = outname + ".svdquest.nex";
   string quartetfile = outname + ".svdquest.quartets";
   string paupfile = outname + ".pauptree";
-  LOG(INFO) << "Writing nexus file " << nexfile << endl;
+  INFO << "Writing nexus file " << nexfile << endl;
   write_nex(alignmentfile, nexfile, ts());
-  LOG(INFO) << "Done" << endl;
+  INFO << "Done" << endl;
 
-  string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick ;\n";
+  string command = "exe " + nexfile + ";\r\n svd evalQuartets=all \r\n qfile=" + quartetfile + "\r\n qformat=qmc \r\n ambigs=missing; \r\n savetrees file="+ paupfile + " format=Newick root=yes;\n";
 
 
 
-  LOG(INFO) << "Running PAUP* " << command << endl;
+  INFO << "Running PAUP*:\n" << command << endl;
   FILE* paupstream;
 #if defined(_WIN32) || defined(_WIN64)
-  paupstream = _popen("paup -n", "w");
+  string exec_command = paup_executable + " -n";
+  paupstream = _popen(exec_command.c_str(), "w");
 #else
   if (wine)
 	  paupstream = popen("wine paup4c -n", "w");
-  else
-	  paupstream = popen("paup -n", "w");
+  else {
+    string exec_command = paup_executable + " -n";
+    INFO << "PAUP command: " << exec_command << endl;
+    paupstream = popen(exec_command.c_str(), "w");
+  }
 #endif
   
   fputs(command.c_str(), paupstream);
 
   fclose(paupstream);
 
-  LOG(INFO) << "DONE" << endl;
+  INFO << "DONE" << endl;
 
 
   ifstream infile(quartetfile);
@@ -124,6 +127,7 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   Quartet q(ts());
   string s;
+  double w;
   while(!infile.eof()) {
     getline(infile, s);
     if (s.size() == 0)
@@ -150,15 +154,17 @@ void SVDQuestTripartitionScorer::runPaup(Config& conf) {
 
   if (!nostar) {
 
-    ASTRALCladeExtractor ce(gtreefile, paupfile);
+    INFO << findAstralJar() << endl;
+    ASTRALCladeExtractor ce(findAstralJar(), gtreefile, paupfile);
 
 
     unordered_set<Clade> newclades = ce.extract(ts());
 
     conf.add_clades(newclades.begin(), newclades.end());
 
-    LOG(INFO) << "Added " << newclades.size() << " clades" << endl;
+    INFO << "Added " << newclades.size() << " clades" << endl;
 
+    DEBUG << conf.get_clades().size() << endl;
   }
     Timer::stop("GetAdditionalClades");
 
@@ -178,7 +184,7 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
     vector<Taxon> nonmembers;
     for(size_t i = 0; i < ts().size(); i++) {
       if (!clade.contains(i))
-  	    nonmembers.push_back(i);
+  	nonmembers.push_back(i);
     }
 
     map<pair<Taxon, Taxon>, double>& mp = W[clade.get_taxa()];
@@ -190,17 +196,16 @@ void SVDQuestTripartitionScorer::setup(Config& conf, vector<Clade>& clades)
     for (size_t i = 0; i < nonmembers.size(); i++) {
       for (size_t j = i+1; j < nonmembers.size(); j++) {
 
-  	    double d = 0;
-  	    for (Taxon k : clade) {
-  	      for (Taxon l : clade) {
-  	        if (k > l) {
-  	          d += (*qd)(nonmembers[i],nonmembers[j],k,l);
-            }
-  	      }
-  	    }
+  	double d = 0;
+  	for (Taxon k : clade) {
+  	  for (Taxon l : clade) {
+  	    if (k > l)
+  	      d += (*qd)(nonmembers[i],nonmembers[j],k,l);
+  	  }
+  	}
 
-  	    mp[make_pair(nonmembers[i], nonmembers[j])] = d;
-  	    mp[make_pair(nonmembers[j], nonmembers[i])] = d;
+  	mp[make_pair(nonmembers[i], nonmembers[j])] = d;
+  	mp[make_pair(nonmembers[j], nonmembers[i])] = d;
       }
     }
   }

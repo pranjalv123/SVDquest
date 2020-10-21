@@ -16,6 +16,8 @@ To check if this is installed correctly, if you run `wine paup4c` from your comm
 
 Alternatively, you can use the Linux version of PAUP*. In this case you should run SVDquest with the `--nowine` option.
 
+If you are running on Windows or using the Linux version of PAUP* on Linux, you can specify a custom PAUP* executable using the --paup-exe option followed by the path to the executable.
+
 You also need ASTRAL in the same folder as SVDquest. So if you are in the folder with the SVDquest executable, Astral/astral.4.7.8.jar (or any other version of ASTRAL) should exist. 
 
 
@@ -32,3 +34,5 @@ If for some reason this is a problem, you can disable these with --nogreedy, --n
 You can also use the `--score` option to score a tree like this:
 
      SVDquest --score -a <input alignment> -o <output file>
+     
+If your analysis has a small number of taxa (perhaps less than 15), you can pass the --unconstrained option to SVDquest to do a global exact search. This will be (substantially) slower than the standard analysis, but it will likely provide a better result.

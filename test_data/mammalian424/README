@@ -1,0 +1,5 @@
+To run SVDquest on this example data, do
+
+SVDquest -a concat -i genetrees -o mammalian
+
+You should get the correct output, matching what is in the "expected" folder.
