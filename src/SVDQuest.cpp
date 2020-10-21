@@ -1,9 +1,9 @@
-#include <phylonaut/wASTRAL.hpp>
-#include <phylonaut/DefaultTaxonSetExtractor.hpp>
-#include <phylonaut/ASTRALCladeExtractor.hpp>
+#include "phylonaut/wASTRAL.hpp"
+#include "phylonaut/Config.hpp"
+#include "phylonaut/CladeExtractor/DefaultTaxonSetExtractor.hpp"
+#include "phylonaut/CladeExtractor/ASTRALCladeExtractor.hpp"
 #include "SVDQuestTripartitionScorer.hpp"
 
-#include <util/Logger.hpp>
 #include <util/Timer.hpp>
 #include <phylonaut/SingleTreeAnalysis.hpp>
 #include <phylonaut/ConsensusTreeAnalysis.hpp>
@@ -22,6 +22,8 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
+  google::InitGoogleLogging(argv[0]);
+
   vector<string> wastral_args;
 
   string input;
@@ -50,10 +52,6 @@ int main(int argc, char** argv) {
 
 
   string paup_executable = "";
-
-  Logger::disable("DEBUG");
-  Logger::enable("INFO");
-  Logger::enable("PROGRESS");
 
   Config conf;
   conf.matrix=0;
@@ -103,12 +101,6 @@ int main(int argc, char** argv) {
 #else
 	  extra = string(realpath(argv[i], NULL));
 #endif
-    }
-    if (string(argv[i]) == "--debug") {
-      Logger::enable("DEBUG");
-      Logger::enable("INFO");
-      Logger::enable("PROGRESS");
-      DEBUG << "Debug enabled\n";
     }
     if (string(argv[i]) == "--score") {
       getScore = true;
@@ -237,14 +229,13 @@ int main(int argc, char** argv) {
   }
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->nostar = nostar;
   dynamic_cast<SVDQuestTripartitionScorer*>(conf.scorer)->wine = wine;
-  DEBUG << conf.scorer->clades_size() << endl;
 
   conf.taxon_extractor = new DefaultTaxonSetExtractor(input);
 
 
 
   if (getScore) {
-    INFO << "Only one tree provided\nScoring tree instead of finding optimal tree" << endl;
+    LOG(INFO) << "Only one tree provided\nScoring tree instead of finding optimal tree" << endl;
     conf.extractors.push_back(new ASTRALCladeExtractor(scoreTree, "", false, true));
   } else {
 
@@ -289,6 +280,6 @@ int main(int argc, char** argv) {
     ofstream outfile2(output + ".pauptree_score");
     outfile2 << trees.at(0) << endl;
     outfile2.close();
-    INFO << "PAUP score: " << trees.at(0) << endl;
+    LOG(INFO) << "PAUP score: " << trees.at(0) << endl;
   }
 }

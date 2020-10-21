@@ -41,6 +41,6 @@ git_repository(
 
 git_repository(
     name = "phylonaut",
-    commit = "c49017a05a55380c6e0b04c789074bdd997eaccd",
+    commit = "f4d3fd75911651a5e62e2f286368add4f047d79c",
     remote = "https://github.com/pranjalv123/phylonaut/",
 )
