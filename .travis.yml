@@ -1,5 +1,5 @@
   
-dist: trusty
+dist: bionic
 sudo: required
 osx_image: xcode8
 language: c++
@@ -8,7 +8,7 @@ os:
 - osx
 - windows
 env:
-- V=1.2.1
+- V=3.6.0
 before_install:
 - |
   if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
