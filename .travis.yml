@@ -35,7 +35,7 @@ before_install:
 script:
 - bazel --bazelrc=bazel.travis.rc build src:SVDQuest -c opt
 - cp bazel-bin/src/SVDQuest SVDQuest-$TRAVIS_OS_NAME
-- bazel --bazelrc=bazel.travis.rc test test:all -c opt
+#- bazel --bazelrc=bazel.travis.rc test test:all -c opt
 
 
 deploy:
